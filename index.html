@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="MathLoopBench measures target-blind theorem recovery: how much of a hidden set of Lean 4 targets an agentic mathematical discovery loop recovers under a fixed budget.">
+  <meta name="keywords" content="MathLoopBench, agentic mathematical discovery loop, Lean 4, theorem proving, conjecturing">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base target="_blank">
+  <title>MathLoopBench: Evaluating Agentic Mathematical Discovery Loops</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/katex/katex.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://khgwak.github.io/mathloopbench/">
+  <meta property="og:title" content="MathLoopBench: Evaluating Agentic Mathematical Discovery Loops">
+  <meta property="og:description" content="Proving benchmarks hand the system a statement, but a discovery loop must first choose what to prove. MathLoopBench measures how many hidden Lean 4 targets a loop recovers from a small seed library.">
+  <meta property="og:image" content="https://khgwak.github.io/mathloopbench/static/images/teaser.png">
+  <meta property="og:image:width" content="2400">
+  <meta property="og:image:height" content="965">
+  <meta property="og:image:alt" content="An agentic discovery loop growing a Lean library, scored against hidden targets in three domains">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MathLoopBench: Evaluating Agentic Mathematical Discovery Loops">
+  <meta name="twitter:description" content="How many hidden Lean 4 targets does a discovery loop recover when it must choose what to prove?">
+  <meta name="twitter:image" content="https://khgwak.github.io/mathloopbench/static/images/teaser.png">
+
+  <script defer src="./static/katex/katex.min.js"></script>
+  <script defer src="./static/katex/contrib/auto-render.min.js"></script>
+  <script defer src="./static/js/index.js"></script>
+  <script defer src="./static/js/loop-demo.js"></script>
+</head>
+<body>
+
+<section class="hero publication-header">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">
+            <span class="title-name">MathLoopBench</span>
+            <span class="title-rest">Evaluating Agentic Mathematical Discovery Loops</span>
+          </h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><a href="https://khgwak.github.io/">Kyeonghwan Gwak</a></span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Agency for Defense Development, South&nbsp;Korea</span>
+          </div>
+
+          <div class="is-size-5 publication-venue-line">
+            <a href="https://mathai-2026.github.io/">NeurIPS 2026 Workshop MATH-AI</a>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="https://openreview.net/pdf?id=HtUTpiDT3k"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <svg class="fa" viewBox="0 0 384 512" aria-hidden="true"><path d="M181.9 256.1c-5-16-4.9-46.9-2-46.9 8.4 0 7.6 36.9 2 46.9zm-1.7 47.2c-7.7 20.2-17.3 43.3-28.4 62.7 18.3-7 39-17.2 62.9-21.9-12.7-9.6-24.9-23.4-34.5-40.8zM86.1 428.1c0 .8 13.2-5.4 34.9-40.2-6.7 6.3-29.1 24.5-34.9 40.2zM248 160h136v328c0 13.3-10.7 24-24 24H24c-13.3 0-24-10.7-24-24V24C0 10.7 10.7 0 24 0h200v136c0 13.2 10.8 24 24 24zm-8 171.8c-20-12.2-33.3-29-42.7-53.8 4.5-18.5 11.6-46.6 6.2-64.2-4.7-29.4-42.4-26.5-47.8-6.8-5 18.3-.4 44.1 8.1 77-11.6 27.6-28.7 64.6-40.8 85.8-.1 0-.1.1-.2.1-27.1 13.9-73.6 44.5-54.5 68 5.6 6.9 16 10 21.5 10 17.9 0 35.7-18 61.1-61.8 25.8-8.5 54.1-19.1 79-23.2 21.7 11.8 47.1 19.5 64 19.5 29.2 0 31.2-32 19.7-43.4-13.9-13.6-54.3-9.7-73.6-7.2zM377 105L279 7c-4.5-4.5-10.6-7-17-7h-6v128h128v-6.1c0-6.3-2.5-12.4-7-16.9zm-74.1 255.3c4.1-2.7-2.5-11.9-42.8-9 37.1 15.8 42.8 9 42.8 9z"/></svg>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://neurips.cc/media/PosterPDFs/NeurIPS%202026/168522.png?t=1795613154.2645323"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <svg class="fa" viewBox="0 0 384 512" aria-hidden="true"><path d="M384 121.941V128H256V0h6.059a24 24 0 0 1 16.97 7.029l97.941 97.941a24.002 24.002 0 0 1 7.03 16.971zM248 160c-13.2 0-24-10.8-24-24V0H24C10.745 0 0 10.745 0 24v464c0 13.255 10.745 24 24 24h336c13.255 0 24-10.745 24-24V160H248zm-135.455 16c26.51 0 48 21.49 48 48s-21.49 48-48 48-48-21.49-48-48 21.491-48 48-48zm208 240h-256l.485-48.485L104.545 328c4.686-4.686 11.799-4.201 16.485.485L160.545 368 264.06 264.485c4.686-4.686 12.284-4.686 16.971 0L320.545 304v112z"/></svg>
+                  </span>
+                  <span>Poster</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <img src="./static/images/teaser.svg" alt="Agentic mathematical discovery loop and MathLoopBench">
+      <p class="teaser-caption">
+        A discovery loop grows a library: the conjecturer proposes, the prover proves, and Lean
+        verifies. After a fixed budget, MathLoopBench scores the run by how many hidden targets
+        it recovered.
+      </p>
+      <h2 class="subtitle tldr">
+        <span class="tldr-badge">TL;DR</span> Proving benchmarks hand the system a statement, but a discovery loop must
+        first choose what to prove. <b>MathLoopBench</b> measures that choice
+        as how many hidden Lean&nbsp;4 targets a loop recovers from a small seed library.
+      </h2>
+    </div>
+  </div>
+</section>
+
+
+<section class="section loop-demo-section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Overview</h2>
+    <div class="loop-demo" id="loop-demo">
+      <div class="loop-toolbar">
+        <div class="loop-stages" role="group" aria-label="Loop stages">
+          <button type="button" data-stage="0"><span>1</span> Conjecture</button>
+          <button type="button" data-stage="1"><span>2</span> Prove</button>
+          <button type="button" data-stage="2"><span>3</span> Verify</button>
+          <button type="button" data-stage="3"><span>4</span> Grow library</button>
+          <button type="button" data-stage="4"><span>5</span> Run to budget</button>
+          <button type="button" data-stage="5"><span>6</span> Score</button>
+        </div>
+        <span class="loop-iter" id="loop-iter"></span>
+      </div>
+      <svg class="loop-svg" id="loop-svg" role="img"
+           aria-label="Animated discovery run: the conjecturer proposes, the prover proves, Lean verifies, and the library grows until the budget is spent; only then does the scorer check the library against the hidden targets."></svg>
+      <div class="loop-footer">
+        <div class="buttons">
+          <button type="button" class="button is-small is-rounded is-dark" id="loop-play">&#9654; Play</button>
+          <button type="button" class="button is-small is-rounded" id="loop-next">Next stage &rarr;</button>
+          <button type="button" class="button is-small is-rounded" id="loop-restart">&#8634; Restart</button>
+        </div>
+        <p class="loop-caption" id="loop-caption"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section abstract-section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <button class="button is-normal is-rounded is-dark toggle-button" type="button"
+                data-toggle="abstract-body" aria-expanded="false" aria-controls="abstract-body">
+          <span>Show full abstract</span>
+          <span class="icon"><svg class="fa" viewBox="0 0 448 512" aria-hidden="true"><path d="M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z"/></svg></span>
+        </button>
+        <div class="content has-text-justified abstract-body" id="abstract-body" hidden>
+          <p>
+            Formal theorem-proving benchmarks hand the system a statement and ask for a proof.
+            A mathematical discovery loop faces the decision before that: with no statement
+            supplied, <em>which propositions are worth proving?</em> We introduce MathLoopBench,
+            which measures this decision as <em>target-blind theorem recovery</em>. A loop starts
+            from a small Lean&nbsp;4 seed library and grows it under a fixed budget; a scorer
+            rechecks every submitted theorem and reports the fraction of a hidden set of targets
+            the loop recovered, against both proof attempts and model tokens. The score belongs
+            to the whole loop, its conjecturing, proving, and orchestration, not to proof
+            generation alone.
+          </p>
+          <p>
+            The gap is large: the same prover solves 92.6% of the targets at solve@16 when
+            handed their statements, while our reference loop, MDLoop, recovers 53.0% after
+            1000 attempts. This motivates improving conjecturing and orchestration. Under one
+            contract, two different loops, MDLoop and CPL, are compared run by run over five
+            seeds per domain. Still, across their runs, the two loops recover eight of the ten
+            targets the prover missed when handed the statements.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<div class="container"><hr class="section-divider"></div>
+
+<section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3 has-text-centered">Results</h2>
+
+          <div class="result-claim">
+            <h3 class="title is-5">Discovering is different from proving.</h3>
+            <div class="content has-text-justified">
+              <p>
+                Given each target statement, the prover solves 92.6% of them. Left to choose its own
+                statements, MDLoop as a whole recovers 53.0%, despite many more attempts.
+                The loop proves plenty, but mostly not what the targets contain: on average, an MDLoop run
+                proves 132, 411, and 297 theorems in analysis, number theory, and group theory, but only
+                13.0%, 7.6%, and 7.8% of them are matched to a target.
+              </p>
+            </div>
+            <figure class="bar-figure">
+              <div class="chart-legend">
+                <span><i class="swatch prover"></i>Prover w/ statement</span>
+                <span><i class="swatch mdloop"></i>MDLoop</span>
+                <span><i class="swatch cpl"></i>CPL</span>
+              </div>
+              <svg class="bar-chart" viewBox="0 0 640 290" role="img" aria-label="Recall at 1000 attempts, overall then by domain: prover given the statement overall 92.6, then 97.8, 91.1, 88.9; MDLoop overall 53.0, then 38.2, 69.3, 51.6; CPL overall 48.1, then 43.0, 57.0, 44.4.">
+                <line class="grid" x1="48" y1="250" x2="636" y2="250"/>
+                <text class="tick" x="40" y="254" text-anchor="end">0</text>
+                <line class="grid" x1="48" y1="200" x2="636" y2="200"/>
+                <text class="tick" x="40" y="204" text-anchor="end">25</text>
+                <line class="grid" x1="48" y1="150" x2="636" y2="150"/>
+                <text class="tick" x="40" y="154" text-anchor="end">50</text>
+                <line class="grid" x1="48" y1="100" x2="636" y2="100"/>
+                <text class="tick" x="40" y="104" text-anchor="end">75</text>
+                <line class="grid" x1="48" y1="50" x2="636" y2="50"/>
+                <text class="tick" x="40" y="54" text-anchor="end">100%</text>
+                <line class="sep" x1="195" y1="44" x2="195" y2="250"/>
+                <g class="bar-group">
+                  <rect class="hit" x="48" y="0" width="147" height="280"/>
+                  <rect class="bar prover" x="64.5" y="64.8" width="34" height="185.2" data-title="Prover w/ statement · Overall: 92.6%" data-body="125 / 135 targets · up to 16 attempts per target"/>
+                  <text class="val bold" x="81.5" y="59.8" text-anchor="middle">92.6</text>
+                  <rect class="bar mdloop" x="104.5" y="144" width="34" height="106" data-title="MDLoop · Overall: 53.0%" data-body="mean of 5 seeds · ±1 SD: 49.3–56.7"/>
+                  <path class="err" d="M121.5,151.4 V136.6 M116.5,151.4 H126.5 M116.5,136.6 H126.5"/>
+                  <text class="val bold" x="121.5" y="131.6" text-anchor="middle">53.0</text>
+                  <rect class="bar cpl" x="144.5" y="153.8" width="34" height="96.2" data-title="CPL · Overall: 48.1%" data-body="average of the three domain means"/>
+                  <text class="val bold" x="161.5" y="148.8" text-anchor="middle">48.1</text>
+                  <g class="gap">
+                    <line class="gap-ref" x1="98.5" y1="64.8" x2="127.5" y2="64.8"/>
+                    <line class="gap-arrow" x1="121.5" y1="64.8" x2="121.5" y2="113.6"/>
+                    <path class="gap-head" d="M117.5,112.6 L125.5,112.6 L121.5,118.6 z"/>
+                  <text class="gap-label" x="128.5" y="77.8">−39.6 <tspan class="gap-unit">pts</tspan></text>
+                  </g>
+                  <text class="group" x="121.5" y="272" text-anchor="middle">Overall</text>
+                </g>
+                <g class="bar-group">
+                  <rect class="hit" x="195" y="0" width="147" height="280"/>
+                  <rect class="bar prover" x="211.5" y="54.4" width="34" height="195.6" data-title="Prover w/ statement · Analysis: 97.8%" data-body="44 / 45 targets · 151 attempts used"/>
+                  <text class="val" x="228.5" y="49.4" text-anchor="middle">97.8</text>
+                  <rect class="bar mdloop" x="251.5" y="173.6" width="34" height="76.4" data-title="MDLoop · Analysis: 38.2%" data-body="mean of 5 seeds · ±1 SD: 32.0–44.4"/>
+                  <path class="err" d="M268.5,186 V161.2 M263.5,186 H273.5 M263.5,161.2 H273.5"/>
+                  <text class="val" x="268.5" y="156.2" text-anchor="middle">38.2</text>
+                  <rect class="bar cpl" x="291.5" y="164" width="34" height="86" data-title="CPL · Analysis: 43.0%" data-body="mean of 3 completed runs (of 5) · ±1 SD: 39.6–46.4"/>
+                  <path class="err" d="M308.5,170.8 V157.2 M303.5,170.8 H313.5 M303.5,157.2 H313.5"/>
+                  <text class="val" x="308.5" y="152.2" text-anchor="middle">43.0</text>
+                  <g class="gap">
+                    <line class="gap-ref" x1="245.5" y1="54.4" x2="314.5" y2="54.4"/>
+                    <line class="gap-arrow" x1="308.5" y1="54.4" x2="308.5" y2="134.2"/>
+                    <path class="gap-head" d="M304.5,133.2 L312.5,133.2 L308.5,139.2 z"/>
+                  <text class="gap-label" x="304.5" y="67.4" text-anchor="end">−54.8 <tspan class="gap-unit">pts</tspan></text>
+                  </g>
+                  <text class="group" x="268.5" y="272" text-anchor="middle">Analysis</text>
+                </g>
+                <g class="bar-group">
+                  <rect class="hit" x="342" y="0" width="147" height="280"/>
+                  <rect class="bar prover" x="358.5" y="67.8" width="34" height="182.2" data-title="Prover w/ statement · Number theory: 91.1%" data-body="41 / 45 targets · 211 attempts used"/>
+                  <text class="val" x="375.5" y="62.8" text-anchor="middle">91.1</text>
+                  <rect class="bar mdloop" x="398.5" y="111.4" width="34" height="138.6" data-title="MDLoop · Number theory: 69.3%" data-body="mean of 5 seeds · ±1 SD: 64.5–74.1"/>
+                  <path class="err" d="M415.5,121 V101.8 M410.5,121 H420.5 M410.5,101.8 H420.5"/>
+                  <text class="val" x="415.5" y="96.8" text-anchor="middle">69.3</text>
+                  <rect class="bar cpl" x="438.5" y="136" width="34" height="114" data-title="CPL · Number theory: 57.0%" data-body="mean of 3 completed runs (of 5) · ±1 SD: 53.6–60.4"/>
+                  <path class="err" d="M455.5,142.8 V129.2 M450.5,142.8 H460.5 M450.5,129.2 H460.5"/>
+                  <text class="val" x="455.5" y="124.2" text-anchor="middle">57.0</text>
+                  <g class="gap">
+                    <line class="gap-ref" x1="392.5" y1="67.8" x2="421.5" y2="67.8"/>
+                    <line class="gap-arrow" x1="415.5" y1="67.8" x2="415.5" y2="78.8"/>
+                    <path class="gap-head" d="M411.5,77.8 L419.5,77.8 L415.5,83.8 z"/>
+                  <text class="gap-label" x="422.5" y="80.8">−21.8 <tspan class="gap-unit">pts</tspan></text>
+                  </g>
+                  <text class="group" x="415.5" y="272" text-anchor="middle">Number theory</text>
+                </g>
+                <g class="bar-group">
+                  <rect class="hit" x="489" y="0" width="147" height="280"/>
+                  <rect class="bar prover" x="505.5" y="72.2" width="34" height="177.8" data-title="Prover w/ statement · Group theory: 88.9%" data-body="40 / 45 targets · 257 attempts used"/>
+                  <text class="val" x="522.5" y="67.2" text-anchor="middle">88.9</text>
+                  <rect class="bar mdloop" x="545.5" y="146.8" width="34" height="103.2" data-title="MDLoop · Group theory: 51.6%" data-body="mean of 5 seeds · ±1 SD: 48.3–54.9"/>
+                  <path class="err" d="M562.5,153.4 V140.2 M557.5,153.4 H567.5 M557.5,140.2 H567.5"/>
+                  <text class="val" x="562.5" y="135.2" text-anchor="middle">51.6</text>
+                  <rect class="bar cpl" x="585.5" y="161.2" width="34" height="88.8" data-title="CPL · Group theory: 44.4%" data-body="mean of 2 completed runs (of 5) · runs: 42.2, 46.7"/>
+                  <path class="err" d="M602.5,165.6 V156.6 M597.5,165.6 H607.5 M597.5,156.6 H607.5"/>
+                  <text class="val" x="602.5" y="151.6" text-anchor="middle">44.4</text>
+                  <g class="gap">
+                    <line class="gap-ref" x1="539.5" y1="72.2" x2="568.5" y2="72.2"/>
+                    <line class="gap-arrow" x1="562.5" y1="72.2" x2="562.5" y2="117.2"/>
+                    <path class="gap-head" d="M558.5,116.2 L566.5,116.2 L562.5,122.2 z"/>
+                  <text class="gap-label" x="569.5" y="85.2">−37.3 <tspan class="gap-unit">pts</tspan></text>
+                  </g>
+                  <text class="group" x="562.5" y="272" text-anchor="middle">Group theory</text>
+                </g>
+                <line class="axis" x1="48" y1="250" x2="636" y2="250"/>
+              </svg>
+            </figure>
+            <p class="table-caption">
+              Recall (%) at 1000 attempts: MDLoop, mean of five seeds; CPL, mean of the runs that
+              completed (3, 3, and 2 of 5). Error bars: &plusmn;1 SD (CPL in group theory: the two runs). Prover w/ statement: up to 16 attempts per target; 151, 211,
+              and 257 used per domain.
+            </p>
+          </div>
+
+          <div class="result-claim">
+            <h3 class="title is-5">One contract compares different loops.</h3>
+            <div class="content has-text-justified">
+              <p>
+                Under the same accounting, neither loop wins everywhere: MDLoop leads in number theory
+                and group theory, CPL in analysis. Spending more tokens does not mean recovering more,
+                and CPL's choice to keep its whole library in the prompt ends 7 of its 15 runs
+                early. With only five seeds per domain, and fewer completed CPL runs, these differences
+                are best read as directional, not as exact magnitudes.
+              </p>
+            </div>
+            <figure class="result-figure">
+              <img src="./static/images/per_domain_run_curves.svg" alt="Recovery curves per domain">
+              <figcaption class="content has-text-justified">
+                Recovery by proof attempts (left) and cumulative model tokens (right). Each line is
+                one run; dashed lines average all five runs of a method only over their common observed
+                horizon.
+              </figcaption>
+            </figure>
+            <div class="has-text-centered">
+              <button class="button is-normal is-rounded is-dark toggle-button" type="button"
+                      data-toggle="all-runs" aria-expanded="false" aria-controls="all-runs">
+                <span>Show detailed numbers</span>
+                <span class="icon"><svg class="fa" viewBox="0 0 448 512" aria-hidden="true"><path d="M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z"/></svg></span>
+              </button>
+            </div>
+            <div class="toggle-body" id="all-runs" hidden>
+            <div class="table-container">
+            <table class="table is-narrow is-hoverable result-table">
+              <thead><tr><th>Loop</th><th>Final</th><th>Tokens</th><th>R@250</th><th>R@500</th><th>R@750</th><th>R@Final</th></tr></thead>
+              <tbody>
+                <tr class="group-row"><th colspan="7">Metric space analysis</th></tr>
+                <tr><th>CPL</th><td>840</td><td>28.3M</td><td>25.8</td><td>35.6<sub>4</sub></td><td>40.0<sub>4</sub></td><td>40.9</td></tr>
+                <tr><th>CPL<sub>1000</sub></th><td>1000<sub>3</sub></td><td>36.4M<sub>3</sub></td><td>26.7<sub>3</sub></td><td>35.6<sub>3</sub></td><td>39.3<sub>3</sub></td><td>43.0<sub>3</sub></td></tr>
+                <tr><th>MDLoop</th><td>1000</td><td>40.8M</td><td>30.2</td><td>33.8</td><td>37.8</td><td>38.2</td></tr>
+              </tbody>
+              <tbody>
+                <tr class="group-row"><th colspan="7">Elementary number theory</th></tr>
+                <tr><th>CPL</th><td>799</td><td>23.3M</td><td>41.3</td><td>48.3<sub>4</sub></td><td>54.1<sub>3</sub></td><td>53.3</td></tr>
+                <tr><th>CPL<sub>1000</sub></th><td>1000<sub>3</sub></td><td>30.3M<sub>3</sub></td><td>38.5<sub>3</sub></td><td>49.6<sub>3</sub></td><td>54.1<sub>3</sub></td><td>57.0<sub>3</sub></td></tr>
+                <tr><th>MDLoop</th><td>1000</td><td>30.7M</td><td>45.3</td><td>59.1</td><td>65.3</td><td>69.3</td></tr>
+              </tbody>
+              <tbody>
+                <tr class="group-row"><th colspan="7">Elementary group theory</th></tr>
+                <tr><th>CPL</th><td>761</td><td>29.4M</td><td>36.9</td><td>42.8<sub>4</sub></td><td>46.7<sub>3</sub></td><td>45.3</td></tr>
+                <tr><th>CPL<sub>1000</sub></th><td>1000<sub>2</sub></td><td>43.8M<sub>2</sub></td><td>37.8<sub>2</sub></td><td>41.1<sub>2</sub></td><td>44.4<sub>2</sub></td><td>44.4<sub>2</sub></td></tr>
+                <tr><th>MDLoop</th><td>1000</td><td>25.9M</td><td>43.6</td><td>48.4</td><td>49.8</td><td>51.6</td></tr>
+              </tbody>
+            </table>
+            </div>
+            <p class="table-caption">
+              Means over five seeds, or over fewer runs where a subscript gives the count. Final: terminal proof attempts. Tokens: cumulative conjecturer and
+              prover tokens. R@N: recall (%) after N attempts. CPL<sub>1000</sub> averages the runs that
+              completed 1000 attempts.
+              Averaged over only the seeds on which CPL completed 1000 attempts, the difference between
+              MDLoop and CPL<sub>1000</sub> at 1000 attempts is &minus;5.2, +10.4, and +4.4 points in
+              analysis, number theory, and group theory.
+            </p>
+            <div class="table-container">
+            <table class="table is-narrow is-hoverable result-table">
+              <thead><tr><th>Loop</th><th>Seed</th><th>Final</th><th>Tokens</th><th>R@250</th><th>R@500</th><th>R@750</th><th>R@Final</th></tr></thead>
+              <tbody>
+                <tr class="group-row"><th colspan="8">Metric space analysis</th></tr>
+                <tr><th>CPL</th><td>1</td><td>1000</td><td>36.4M</td><td>31.1</td><td>33.3</td><td>37.8</td><td>40.0</td></tr>
+                <tr><th>CPL</th><td>2</td><td>1000</td><td>38.3M</td><td>24.4</td><td>35.6</td><td>42.2</td><td><b>46.7</b></td></tr>
+                <tr><th>CPL</th><td>3</td><td>924</td><td>25.0M</td><td>24.4</td><td>35.6</td><td>42.2</td><td>44.4</td></tr>
+                <tr><th>CPL</th><td>4</td><td>274</td><td>7.3M</td><td>24.4</td><td>N/A</td><td>N/A</td><td>31.1</td></tr>
+                <tr><th>CPL</th><td>5</td><td>1000</td><td>34.5M</td><td>24.4</td><td>37.8</td><td>37.8</td><td>42.2</td></tr>
+                <tr><th>MDLoop</th><td>1</td><td>1000</td><td>37.0M</td><td>31.1</td><td>35.6</td><td><b>46.7</b></td><td><b>46.7</b></td></tr>
+                <tr><th>MDLoop</th><td>2</td><td>1000</td><td>41.9M</td><td>28.9</td><td>31.1</td><td>33.3</td><td>35.6</td></tr>
+                <tr><th>MDLoop</th><td>3</td><td>1000</td><td>42.9M</td><td>26.7</td><td>31.1</td><td>35.6</td><td>35.6</td></tr>
+                <tr><th>MDLoop</th><td>4</td><td>1000</td><td>37.7M</td><td><b>35.6</b></td><td><b>40.0</b></td><td>42.2</td><td>42.2</td></tr>
+                <tr><th>MDLoop</th><td>5</td><td>1000</td><td>44.2M</td><td>28.9</td><td>31.1</td><td>31.1</td><td>31.1</td></tr>
+              </tbody>
+              <tbody>
+                <tr class="group-row"><th colspan="8">Elementary number theory</th></tr>
+                <tr><th>CPL</th><td>1</td><td>1000</td><td>28.3M</td><td>33.3</td><td>42.2</td><td>46.7</td><td>53.3</td></tr>
+                <tr><th>CPL</th><td>2</td><td>543</td><td>13.8M</td><td>42.2</td><td>44.4</td><td>N/A</td><td>46.7</td></tr>
+                <tr><th>CPL</th><td>3</td><td>1000</td><td>32.1M</td><td>35.6</td><td>51.1</td><td>57.8</td><td>57.8</td></tr>
+                <tr><th>CPL</th><td>4</td><td>450</td><td>11.8M</td><td><b>48.9</b></td><td>N/A</td><td>N/A</td><td>48.9</td></tr>
+                <tr><th>CPL</th><td>5</td><td>1000</td><td>30.3M</td><td>46.7</td><td>55.6</td><td>57.8</td><td>60.0</td></tr>
+                <tr><th>MDLoop</th><td>1</td><td>1000</td><td>32.8M</td><td><b>48.9</b></td><td>57.8</td><td>66.7</td><td>66.7</td></tr>
+                <tr><th>MDLoop</th><td>2</td><td>1000</td><td>31.1M</td><td>44.4</td><td>53.3</td><td>60.0</td><td>66.7</td></tr>
+                <tr><th>MDLoop</th><td>3</td><td>1000</td><td>29.1M</td><td>46.7</td><td>60.0</td><td>64.4</td><td>68.9</td></tr>
+                <tr><th>MDLoop</th><td>4</td><td>1000</td><td>30.6M</td><td><b>48.9</b></td><td><b>68.9</b></td><td><b>73.3</b></td><td><b>77.8</b></td></tr>
+                <tr><th>MDLoop</th><td>5</td><td>1000</td><td>29.9M</td><td>37.8</td><td>55.6</td><td>62.2</td><td>66.7</td></tr>
+              </tbody>
+              <tbody>
+                <tr class="group-row"><th colspan="8">Elementary group theory</th></tr>
+                <tr><th>CPL</th><td>1</td><td>588</td><td>19.5M</td><td>35.6</td><td>40.0</td><td>N/A</td><td>40.0</td></tr>
+                <tr><th>CPL</th><td>2</td><td>448</td><td>12.9M</td><td>28.9</td><td>N/A</td><td>N/A</td><td>46.7</td></tr>
+                <tr><th>CPL</th><td>3</td><td>1000</td><td>43.0M</td><td>37.8</td><td>42.2</td><td>46.7</td><td>46.7</td></tr>
+                <tr><th>CPL</th><td>4</td><td>767</td><td>27.0M</td><td>44.4</td><td>48.9</td><td><b>51.1</b></td><td>51.1</td></tr>
+                <tr><th>CPL</th><td>5</td><td>1000</td><td>44.5M</td><td>37.8</td><td>40.0</td><td>42.2</td><td>42.2</td></tr>
+                <tr><th>MDLoop</th><td>1</td><td>1000</td><td>24.5M</td><td>44.4</td><td>48.9</td><td>48.9</td><td><b>55.6</b></td></tr>
+                <tr><th>MDLoop</th><td>2</td><td>1000</td><td>25.6M</td><td>44.4</td><td>48.9</td><td><b>51.1</b></td><td>53.3</td></tr>
+                <tr><th>MDLoop</th><td>3</td><td>1000</td><td>25.3M</td><td><b>46.7</b></td><td><b>51.1</b></td><td><b>51.1</b></td><td>51.1</td></tr>
+                <tr><th>MDLoop</th><td>4</td><td>1000</td><td>26.3M</td><td>44.4</td><td>48.9</td><td><b>51.1</b></td><td>51.1</td></tr>
+                <tr><th>MDLoop</th><td>5</td><td>1000</td><td>27.6M</td><td>37.8</td><td>44.4</td><td>46.7</td><td>46.7</td></tr>
+              </tbody>
+            </table>
+            </div>
+            </div>
+          </div>
+
+          <div class="result-claim">
+            <h3 class="title is-5">Loops recover targets the prover missed.</h3>
+            <div class="content has-text-justified">
+              <p>
+                The prover misses ten targets even when given the statements, eight of them Level 3 targets.
+                Across five runs each, the two loops together recover eight of them: CPL seven, MDLoop
+                six. The prover is the same; what the loops add is the context they accumulate and many
+                more attempts.
+              </p>
+            </div>
+            <div class="missed-legend">
+              <span><i class="dot is-hit"></i>recovered by at least one loop</span>
+              <span><i class="dot"></i>missed by the prover and both loops</span>
+            </div>
+            <div class="missed-grid">
+              <div class="missed-col">
+                <h4>Analysis</h4>
+                <div class="missed-item" tabindex="0"><i class="dot is-hit"></i>K05<small>CPL</small><span class="missed-tip">Level 3 · In a metric space, every complete and totally bounded set is sequentially compact.</span></div>
+              </div>
+              <div class="missed-col">
+                <h4>Number theory</h4>
+                <div class="missed-item" tabindex="0"><i class="dot is-hit"></i>C07<small>CPL</small><span class="missed-tip">Level 3 · For \(a, n \in \mathbb{N}\), if \(\gcd(a, n) = 1\), then \(a\) has a modular inverse modulo \(n\).</span></div>
+                <div class="missed-item" tabindex="0"><i class="dot is-hit"></i>G06<small>both</small><span class="missed-tip">Level 3 · For \(a, b \in \mathbb{N}\), \(\gcd(a, b) = 1 \Rightarrow \operatorname{lcm}(a, b) = ab\).</span></div>
+                <div class="missed-item" tabindex="0"><i class="dot is-hit"></i>G07<small>MDLoop</small><span class="missed-tip">Level 3 · For \(a, b, d, m \in \mathbb{N}\), if \(\gcd(a, b) = d\) and \(\operatorname{lcm}(a, b) = m\), then \(dm = ab\).</span></div>
+                <div class="missed-item" tabindex="0"><i class="dot is-hit"></i>P07<small>both</small><span class="missed-tip">Level 3 · For \(n \in \mathbb{N}\), if \(2 \le n\), then some prime \(p\) divides \(n\).</span></div>
+              </div>
+              <div class="missed-col">
+                <h4>Group theory</h4>
+                <div class="missed-item" tabindex="0"><i class="dot is-hit"></i>H07<small>both</small><span class="missed-tip">Level 2 · Let \(f : G \to K\) be a group homomorphism. If \(S \le K\), then \(f^{-1}(S) \le G\).</span></div>
+                <div class="missed-item" tabindex="0"><i class="dot is-hit"></i>L03<small>both</small><span class="missed-tip">Level 1 · For a group \(G\), \([G : G] = 1\).</span></div>
+                <div class="missed-item" tabindex="0"><i class="dot is-hit"></i>N03<small>both</small><span class="missed-tip">Level 3 · For a group \(G\), \(Z(G) \trianglelefteq G\).</span></div>
+                <div class="missed-item" tabindex="0"><i class="dot"></i>L05<span class="missed-tip">Level 3 · If \(G\) is a finite group and \(H \le G\), then \([G : H]\,|H| = |G|\).</span></div>
+                <div class="missed-item" tabindex="0"><i class="dot"></i>L06<span class="missed-tip">Level 3 · If \(G\) is a finite group, \(a \in G\), and \(\operatorname{ord}(a) = n\), then \(n \mid |G|\).</span></div>
+              </div>
+            </div>
+            <p class="table-caption">
+              The ten targets the prover does not prove within 16 attempts when given the statement.
+              The label beside each recovered target names the loop that recovered it in at least one of
+              its five runs.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<div class="container"><hr class="section-divider"></div>
+
+<section class="section" id="PeerReview">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Peer Review</h2>
+        <div class="content has-text-justified">
+          <p>
+            The paper received four reviews. The author sincerely thanks all the anonymous reviewers
+            for their time and constructive feedback. Most reviewers found the motivation and idea
+            of the paper interesting, and all of them found it clearly relevant to the focus of the
+            workshop. However, most reviewers pointed out that the experiments are limited.
+            The author agrees and regrets the limited experiments. The results should therefore be
+            read with care. They come from three small, curated target sets and a single pair of
+            models, so they may not carry over to other domains or models, and no ablation isolates
+            which part of a loop accounts for the gap.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<div class="container"><hr class="section-divider"></div>
+
+<section class="section" id="FutureWork">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Future Work</h2>
+        <div class="content has-text-justified">
+          <p>
+            The aim is not a loop that scores well here, but one that contributes to mathematics:
+            working from a library as large as Mathlib, it would pose its own questions and prove new
+            results. A natural next step is to roll Mathlib back to an earlier version, hide the
+            theorems added since then, and ask whether a loop rebuilds them; only theorems that the
+            older version can already state and prove would count. This scales the benchmark up, but
+            it still measures rediscovery, and exposure during pretraining would need care. Beyond rediscovery there is no answer key. Lean checks that a proof is
+            valid, not that the result is new or meaningful to the mathematical community; a result missing from a formal library need
+            not be new, and judging novelty and value takes the review of mathematicians.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<div class="container"><hr class="section-divider"></div>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <div class="bibtex-block">
+      <button class="button is-small is-rounded is-dark copy-button" type="button">
+        <span class="icon"><svg class="fa" viewBox="0 0 448 512" aria-hidden="true"><path d="M320 448v40c0 13.255-10.745 24-24 24H24c-13.255 0-24-10.745-24-24V120c0-13.255 10.745-24 24-24h72v296c0 30.879 25.121 56 56 56h168zm0-344V0H152c-13.255 0-24 10.745-24 24v368c0 13.255 10.745 24 24 24h272c13.255 0 24-10.745 24-24V128H344c-13.2 0-24-10.8-24-24zm120.971-31.029L375.029 7.029A24 24 0 0 0 358.059 0H352v96h96v-6.059a24 24 0 0 0-7.029-16.97z"/></svg></span>
+        <span>Copy</span>
+      </button>
+      <pre><code>@inproceedings{gwak2026mathloopbench,
+title={MathLoopBench: Evaluating Agentic Mathematical Discovery Loops},
+author={Kyeonghwan Gwak},
+booktitle={The Sixth Workshop on Mathematical Reasoning and AI},
+year={2026}
+}</code></pre>
+    </div>
+  </div>
+</section>
+
+
+<div class="container"><hr class="section-divider"></div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            Contact: <a href="mailto:khgwak@unist.ac.kr" target="_self">khgwak@unist.ac.kr</a>
+          </p>
+          <p>
+            <span class="keep-together">This website is licensed under
+            <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">CC&nbsp;BY-SA&nbsp;4.0</a>.</span>
+            <span class="keep-together">Website source code borrowed from <a href="https://nerfies.github.io">Nerfies</a>.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
